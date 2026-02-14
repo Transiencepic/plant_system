@@ -1,4 +1,4 @@
-\# 🌱 智能植物养护系统 - 后端服务
+\#智能植物养护系统 
 
 
 
@@ -8,9 +8,11 @@
 
 
 
+
+
+
+
 \## 快速开始
-
-
 
 \### 前提条件
 
@@ -20,21 +22,23 @@
 
 
 
-\### 安装依赖
+\### 1.安装依赖
 
 ```bash
 
 pip install -r requirements.txt
+
 ```
+
 
 
 \### 2. 启动所有服务（按顺序）
 
-1\.启动数据库
+1\\.启动数据库
 
-2\.启动后端API
+2\\.启动后端API
 
-3\.启动公网隧道（供队友访问）
+3\\.启动公网隧道（供队友访问）
 
 
 
@@ -50,33 +54,61 @@ pip install -r requirements.txt
 
 plant\_system/
 
-├── app.py                 # Flask应用主文件，所有API路由定义
+├── backend/ # 后端核心代码
 
-├── config.py              # 系统唯一配置文件（服务器、数据库、硬件地址等）
+│ ├── app.py # Flask应用主文件，所有API路由定义
 
-├── requirements.txt       # Python依赖包列表
+│ ├── config.py # 系统配置文件
 
-├── .env                   # 敏感环境变量（数据库令牌、API密钥等，请勿上传）
+│ ├── db\_client.py # InfluxDB数据库客户端
 
-├── README.md              # 本文档
+│ ├── requirements.txt # Python依赖包列表
 
-├── API\_DOCUMENTATION.md             # 详细的API接口文档
+│ └── tools/ # 核心工具函数目录
 
-├── data/                  # 本地模拟数据存储目录
+│ ├── ai\_advisor.py # AI建议生成模块
 
-│   ├── images
+│ ├── camera\_tool.py # 摄像头控制模块
 
-├── db\_client.py       # InfluxDB数据库客户端（读写传感器数据）
+│ ├── disease\_detector.py # 病害检测模块（调用AI模型）
 
-├── tools/                 # 核心工具函数目录
+│ └── watering.py # 浇水控制模块
 
-│   ├── ai_advisor.py
+├── frontend/ # 前端代码（待添加）
 
-│   ├── disease_detector.py
+├── hardware/ # 硬件控制代码（待添加）
 
-│   └── watering.py        # 浇水控制模块（调用硬件设备）
+├── ai\_model/ # AI模型文件（需自行下载）
 
-└── \[待添加]...            
+├── docs/ # 文档
+
+│ ├── README.md # 本文档
+
+│ └── API\_DOCUMENTATION.md # 详细的API接口文档
+
+├── data/ # 本地模拟数据存储目录
+
+│ └── images/ # 测试图片存放位置
+
+├── .env # 环境变量（请勿上传）
+
+└── .gitignore # Git忽略文件配置    
+
+
+
+\## 🤖 AI模型说明
+
+本项目的植物病害检测功能基于开源深度学习模型实现：
+
+\- \*\*原项目地址\*\*：https://github.com/manthan89-py/Plant-Disease-Detection
+
+\- \*\*模型文件\*\*：需要下载 `plant\_disease\_model\_1\_latest.pt` 等文件
+
+\- \*\*下载后放置位置\*\*：项目根目录的 `ai\_model/` 文件夹下
+
+\- \*\*依赖库\*\*：PyTorch、Torchvision等（已在 `requirements.txt` 中列出）
+
+> ⚠️ 注意：由于模型文件较大（超过200MB），未包含在GitHub仓库中，请自行下载。
 
 
 
@@ -84,27 +116,39 @@ plant\_system/
 
 主要配置集中在 config.py 和 .env 文件中，请根据实际环境修改：
 
-* config.py：调整服务器端口、数据文件路径、硬件设备URL等。
-* .env：存放安全敏感信息，如 INFLUXDB\_TOKEN, OPENAI\_API\_KEY 等。\*\*切勿将此文件提交到公开仓库。\*\*
+\* config.py：调整服务器端口、数据文件路径、硬件设备URL等。
+
+\* .env：存放安全敏感信息，如 INFLUXDB\\\_TOKEN, OPENAI\\\_API\\\_KEY 等。\\\*\\\*切勿将此文件提交到公开仓库。\\\*\\\*
 
 
 
 \## 📡 API 接口
 
-完整的API接口说明请参见：API\_DOCUMENTATION.md。
+完整的API接口说明请参见：API\\\_DOCUMENTATION.md。
 
 主要接口包括：
 
-* GET /api/status - 获取系统状态
-* GET /api/data - 获取最新传感器数据（自动判别硬件/模拟数据）
-* GET/api/history/real - 真实历史数据
-* GET/api/history - 历史数据
-* GET/api/config - 系统配置
-* GET/api/ai/advice - 🌱 智能浇水建议
-* POST /api/sensor - ［硬件调用］接收传感器数据
-* POST /api/water - 手动控制浇水
-* POST /api/mode - 切换系统模式（手动/自动）
-* POST /api/camera/take - 控制拍照（树莓派）
+\* GET /api/status - 获取系统状态
+
+\* GET /api/data - 获取最新传感器数据（自动判别硬件/模拟数据）
+
+\* GET/api/history/real - 真实历史数据
+
+\* GET/api/history - 历史数据
+
+\* GET/api/config - 系统配置
+
+\* GET/api/ai/advice - 🌱 智能浇水建议
+
+\* POST /api/sensor - ［硬件调用］接收传感器数据
+
+\* POST /api/water - 手动控制浇水
+
+\* POST /api/mode - 切换系统模式（手动/自动）
+
+\* POST /api/camera/take - 控制拍照（树莓派）
+
+
 
 
 
@@ -125,3 +169,178 @@ plant\_system/
 \- 2026-02-06：搭建数据库，开通公网，完善flask框架，增加工具函数watering
 
 \- 2026-02-10：接AI
+
+\- 2026-02-14：整理文件，初步上传GitHub#智能植物养护系统 
+
+
+
+\## 项目说明
+
+这是一个为智能植物养护项目提供数据存储、API接口和设备控制的核心后端服务。基于 Flask + InfluxDB + Ngrok 构建。
+
+
+
+
+
+
+
+\## 快速开始
+
+\### 前提条件
+
+\*   Python 3.9+
+
+\*   ［待硬件就绪］树莓派（拍照、浇水控制）
+
+
+
+\### 1.安装依赖
+
+```bash
+
+pip install -r requirements.txt
+
+```
+
+
+
+\### 2. 启动所有服务（按顺序）
+
+1\\.启动数据库
+
+2\\.启动后端API
+
+3\\.启动公网隧道（供队友访问）
+
+
+
+\### 3. 访问服务
+
+\- 首页：http://localhost:5000
+
+\- API文档：http://localhost:5000/
+
+
+
+\## 📁项目结构
+
+plant\_system/
+
+├── backend/ # 后端核心代码
+
+│ ├── app.py # Flask应用主文件，所有API路由定义
+
+│ ├── config.py # 系统配置文件
+
+│ ├── db\_client.py # InfluxDB数据库客户端
+
+│ ├── requirements.txt # Python依赖包列表
+
+│ └── tools/ # 核心工具函数目录
+
+│ ├── ai\_advisor.py # AI建议生成模块
+
+│ ├── camera\_tool.py # 摄像头控制模块
+
+│ ├── disease\_detector.py # 病害检测模块（调用AI模型）
+
+│ └── watering.py # 浇水控制模块
+
+├── frontend/ # 前端代码（待添加）
+
+├── hardware/ # 硬件控制代码（待添加）
+
+├── ai\_model/ # AI模型文件（需自行下载）
+
+├── docs/ # 文档
+
+│ ├── README.md # 本文档
+
+│ └── API\_DOCUMENTATION.md # 详细的API接口文档
+
+├── data/ # 本地模拟数据存储目录
+
+│ └── images/ # 测试图片存放位置
+
+├── .env # 环境变量（请勿上传）
+
+└── .gitignore # Git忽略文件配置    
+
+
+
+\## 🤖 AI模型说明
+
+本项目的植物病害检测功能基于开源深度学习模型实现：
+
+\- \*\*原项目地址\*\*：https://github.com/manthan89-py/Plant-Disease-Detection
+
+\- \*\*模型文件\*\*：需要下载 `plant\_disease\_model\_1\_latest.pt` 等文件
+
+\- \*\*下载后放置位置\*\*：项目根目录的 `ai\_model/` 文件夹下
+
+\- \*\*依赖库\*\*：PyTorch、Torchvision等（已在 `requirements.txt` 中列出）
+
+> ⚠️ 注意：由于模型文件较大（超过200MB），未包含在GitHub仓库中，请自行下载。
+
+
+
+\## ⚙️ 配置说明
+
+主要配置集中在 config.py 和 .env 文件中，请根据实际环境修改：
+
+\* config.py：调整服务器端口、数据文件路径、硬件设备URL等。
+
+\* .env：存放安全敏感信息，如 INFLUXDB\\\_TOKEN, OPENAI\\\_API\\\_KEY 等。\\\*\\\*切勿将此文件提交到公开仓库。\\\*\\\*
+
+
+
+\## 📡 API 接口
+
+完整的API接口说明请参见：API\\\_DOCUMENTATION.md。
+
+主要接口包括：
+
+\* GET /api/status - 获取系统状态
+
+\* GET /api/data - 获取最新传感器数据（自动判别硬件/模拟数据）
+
+\* GET/api/history/real - 真实历史数据
+
+\* GET/api/history - 历史数据
+
+\* GET/api/config - 系统配置
+
+\* GET/api/ai/advice - 🌱 智能浇水建议
+
+\* POST /api/sensor - ［硬件调用］接收传感器数据
+
+\* POST /api/water - 手动控制浇水
+
+\* POST /api/mode - 切换系统模式（手动/自动）
+
+\* POST /api/camera/take - 控制拍照（树莓派）
+
+
+
+
+
+\## 👥团队成员
+
+\- 后端：周佳乐
+
+\- 硬件：许隽玮
+
+\- 前端：郑淇匀
+
+
+
+\## 更新日志
+
+\- 2026-01-31：创建项目，实现基础API
+
+\- 2026-02-06：搭建数据库，开通公网，完善flask框架，增加工具函数watering
+
+\- 2026-02-10：接AI
+
+\- 2026-02-14：整理文件，初步上传GitHub
+
