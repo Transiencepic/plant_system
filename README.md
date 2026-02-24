@@ -1,99 +1,61 @@
 \#智能植物养护系统 
 
-
-
 \## 项目说明
-
 这是一个为智能植物养护项目提供数据存储、API接口和设备控制的核心后端服务。基于 Flask + InfluxDB + Ngrok 构建。
-
-
-
-
-
 
 
 \## 快速开始
 
 \### 前提条件
-
 \*   Python 3.9+
-
 \*   ［待硬件就绪］树莓派（拍照、浇水控制）
 
-
-
 \### 1.安装依赖
-
 ```bash
-
 pip install -r requirements.txt
-
 ```
 
-
-
-\### 2. 启动所有服务（按顺序）
-
+\### 2. 启动后端所有服务（按顺序）
 1\\.启动数据库
-
 2\\.启动后端API
-
 3\\.启动公网隧道（供队友访问）
 
-
-
 \### 3. 访问服务
-
 \- 首页：http://localhost:5000
-
 \- API文档：http://localhost:5000/
-
-
 
 \## 📁项目结构
 
-plant\_system/
-
+plant_system/
 ├── backend/ # 后端核心代码
-
-│ ├── app.py # Flask应用主文件，所有API路由定义
-
+│ ├── app.py # Flask主应用，所有API路由定义
 │ ├── config.py # 系统配置文件
-
-│ ├── db\_client.py # InfluxDB数据库客户端
-
+│ ├── db_client.py # InfluxDB数据库客户端
 │ ├── requirements.txt # Python依赖包列表
-
 │ └── tools/ # 核心工具函数目录
-
-│ ├── ai\_advisor.py # AI建议生成模块
-
-│ ├── camera\_tool.py # 摄像头控制模块
-
-│ ├── disease\_detector.py # 病害检测模块（调用AI模型）
-
+│ ├── ai_advisor.py # AI建议生成模块
+│ ├── camera_tool.py # 摄像头控制模块
+│ ├── disease_detector.py # 病害检测模块（调用AI模型）
 │ └── watering.py # 浇水控制模块
-
-├── frontend/ # 前端代码（待添加）
-
+├── frontend/ # 前端代码（已添加）
+│ ├── index.html # 主页面
+│ └── static/ # 静态资源
+│ ├── css/ # 样式文件
+│ │ └── style.css
+│ └── js/ # JavaScript文件
+│ ├── config.js # 前端配置文件（API端点配置）
+│ ├── data-manager.js # 数据管理逻辑
+│ ├── mock-api.js # 模拟API（仅开发用）
+│ └── ui-components.js # UI组件
 ├── hardware/ # 硬件控制代码（待添加）
-
-├── ai\_model/ # AI模型文件（需自行下载）
-
+├── ai_model/ # AI模型文件（需自行下载）
 ├── docs/ # 文档
-
 │ ├── README.md # 本文档
-
-│ └── API\_DOCUMENTATION.md # 详细的API接口文档
-
+│ └── API_DOCUMENTATION.md # 详细的API接口文档
 ├── data/ # 本地模拟数据存储目录
-
 │ └── images/ # 测试图片存放位置
-
 ├── .env # 环境变量（请勿上传）
-
-└── .gitignore # Git忽略文件配置    
-
+└── .gitignore # Git忽略文件配置
 
 
 \## 🤖 AI模型说明
