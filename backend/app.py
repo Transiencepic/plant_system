@@ -49,7 +49,7 @@ def init_sensor_data():
     """初始化传感器数据"""
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return {
-        "temperature": round(20 + random.random() * 10, 1),  # 20-30°C
+        "temperature": 25.0,
         "humidity": round(40 + random.random() * 30, 1),     # 40-70%
         "soil_moisture": random.randint(300, 700),           # 300-700
         "light_level": random.randint(500, 1000),            # 500-1000 lux

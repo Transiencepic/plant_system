@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="{{ url_for('static', filename='js/config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data-manager.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ui-components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/mock-api.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>植物监控系统</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f9f0;
+        }
+        .header {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 30px;
+        }
+        .sensor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #4caf50;
+        }
+        .sensor-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #388e3c;
+        }
+        .data-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        .unit {
+            color: #666;
+            font-size: 16px;
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #388e3c;
+        }
+        /* 图表按钮样式 */
+#sensorChart {
+    background: white;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.chart-controls button {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.chart-controls button:hover {
+    background: #d0d0d0;
+}
+
+.chart-controls button.active {
+    background: #4caf50;
+    color: white;
+}
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🌱 植物健康监控系统</h1>
+        <p>实时监控植物的生长状况</p>
+            <div style="margin-top: 10px;">
+        <button onclick="toggleMockMode()" style="font-size: 12px; padding: 5px 10px; background: #666;">
+            🔄 模拟模式
+        </button>
+        <span id="mode-status" style="margin-left: 10px; font-size: 12px; color: #666;">
+            当前：模拟数据
+        </span>
+    </div>
+    </div>
+
+    <div class="sensor-card">
+        <h2 class="sensor-title">🌡️ 温度监测</h2>
+        <p>当前温度：<span class="data-value" id="temperature">25.3</span><span class="unit">°C</span></p>
+        <p>状态：<span id="temp-status" style="color:green;">正常</span></p>
+    </div>
+
+    <div class="sensor-card">
+        <h2 class="sensor-title">💧 土壤湿度</h2>
+        <p>湿度值：<span class="data-value" id="moisture">65</span><span class="unit">%</span></p>
+        <p>状态：<span id="moisture-status" style="color:blue;">良好</span></p>
+    </div>
+
+    <div class="sensor-card">
+    <h2 class="sensor-title">📸 植物图像</h2>
+    <div style="background: #eee; padding: 20px; border-radius: 5px;">
+        <!-- 图片容器，固定高度，保持比例 -->
+        <div style="width: 100%; height: 300px; background: #f5f5f5; 
+                    display: flex; justify-content: center; align-items: center;
+                    border-radius: 5px; margin-bottom: 10px;">
+            <img id="plant-image" src="" 
+                 style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+        </div>
+        <p id="image-placeholder" style="text-align: center; color: #666;">
+            🌿 图像显示区域（连接树莓派相机后显示）
+        </p>
+        <button onclick="takePhoto()" style="width: 100%; padding: 10px;">
+            📷 拍摄照片
+        </button>
+    </div>
+</div>
+
+    <div class="sensor-card">
+    <h2 class="sensor-title">🤖 AI病害诊断</h2>
+    <div id="ai-disease-analysis">
+        <p style="margin-bottom: 10px;">🌿 植物健康状况：<span id="disease-status">正常</span></p>
+        <p style="margin-bottom: 5px;">🔍 检测结果：<span id="disease-name">无病害</span></p>
+        <p style="margin-bottom: 5px;">📊 置信度：<span id="disease-confidence">95%</span></p>
+        <p>💊 养护建议：<span id="disease-suggestions">继续保持当前养护</span></p>
+    </div>
+    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; font-size: 13px; color: #666;">
+        <span>⚠️ AI仅提供病害诊断，浇水由系统规则控制</span>
+    </div>
+    </div>
+
+    <div class="sensor-card" style="border-left-color: #FF9800;">
+    <h2 class="sensor-title">💦 浇水决策</h2>
+    <div id="watering-decision">
+        <p>🌡️ 土壤湿度：<span id="decision-moisture">65%</span></p>
+        <p>💧 决策：<span id="decision-action" style="font-weight: bold; color: #2196f3;">暂不需要浇水</span></p>
+        <p>📋 原因：<span id="decision-reason">土壤湿度适宜</span></p>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #999;">
+        决策方式：基于规则阈值 | 更新时间：<span id="decision-time">刚刚</span>
+    </div>
+    </div>
+
+    <div class="sensor-card">
+    <h2 class="sensor-title">📊 传感器数据图表</h2>
+    <div style="position: relative; height: 300px;">
+        <canvas id="sensorChart"></canvas>
+    </div>
+    <div style="margin-top: 15px;">
+        <button onclick="updateChart('hour')">过去1小时</button>
+        <button onclick="updateChart('day')">过去24小时</button>
+        <button onclick="updateChart('week')">过去一周</button>
+    </div>
+    </div>
+    
+    <div class="sensor-card" style="border-left-color: #9C27B0;">
+        <h2 class="sensor-title">⚙️ 系统模式</h2>
+        <div style="display: flex; gap: 20px; justify-content: center; margin: 20px 0;">
+            <button id="manual-mode-btn" onclick="switchToManualMode()" 
+                    style="flex: 1; padding: 12px; background: #2196f3; opacity: 1; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                👋 手动模式
+            </button>
+            <button id="auto-mode-btn" onclick="switchToAutoMode()" 
+                    style="flex: 1; padding: 12px; background: #4CAF50; opacity: 0.6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                🤖 自动模式
+            </button>
+        </div>
+        <div style="text-align: center; font-size: 14px;">
+            <span id="current-mode-display" style="background: #f0f0f0; padding: 5px 15px; border-radius: 15px;">
+                当前模式: 手动模式
+            </span>
+        </div>
+        <div id="auto-config-display" style="margin-top: 15px; font-size: 13px; color: #666; display: none;">
+            <hr style="margin: 10px 0;">
+            <div style="display: flex; justify-content: space-around;">
+                <span>💧 阈值: <span id="water-threshold">300</span></span>
+                <span>⏱️ 浇水: <span id="water-duration">5</span>秒</span>
+                <span>🔄 间隔: <span id="check-interval">300</span>秒</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="updateData()">🔄 刷新数据</button>
+        <button onclick="startWatering()" style="background: #2196f3;">💦 立即浇水</button>
+    </div>
+ 
+
+    <script>
+    // 温度湿度图表
+    let sensorChart;
+     // 初始化图表
+    document.addEventListener('DOMContentLoaded', initChart);
+    //图表模块
+    function initChart() {
+    const ctx = document.getElementById('sensorChart').getContext('2d');
+    
+    sensorChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+            datasets: [{
+                label: '温度 (°C)',
+                data: [22.5, 21.8, 25.3, 28.7, 29.2, 26.8],
+                borderColor: config.colors.hot,  // 使用配置的颜色
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y'
+            }, {
+                label: '湿度 (%)',
+                data: [65, 68, 62, 58, 61, 64],
+                borderColor: config.colors.thirsty,  // 使用配置的颜色
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.datasetIndex === 0) {
+                                label += context.parsed.y + '°C';
+                            } else {
+                                label += context.parsed.y + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                y: {
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: '温度 (°C)'
+                    },
+                    min: 15,
+                    max: 35
+                },
+                y1: {
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: '湿度 (%)'
+                    },
+                    min: 30,
+                    max: 80
+                }
+            }
+        }
+    });
+}
+    async function updateChart(range) {
+    try {
+        const chartData = await dataManager.fetchChartData(range);
+        
+        // 更新图表数据
+        sensorChart.data.labels = chartData.labels;
+        sensorChart.data.datasets[0].data = chartData.temperature;
+        sensorChart.data.datasets[1].data = chartData.humidity;
+        sensorChart.update();
+        
+        console.log(`图表更新为：${range}`);
+        
+    } catch (error) {
+        console.error('更新图表失败：', error);
+        alert('图表数据获取失败');
+    }
+}
+    //数据更新模块
+    async function updateData() {
+    try {
+        console.log('🔄 开始更新传感器数据...');
+        const sensorData = await dataManager.fetchSensorData();  // 如果报错就真的报错
+        // 更新温度显示
+        const temp = parseFloat(sensorData.temperature);
+        document.getElementById('temperature').textContent = temp.toFixed(1);
+        
+        const tempStatus = config.getTemperatureStatus(temp);
+        document.getElementById('temp-status').textContent = tempStatus.status;
+        document.getElementById('temp-status').style.color = config.getColorForStatus(tempStatus.level);
+        
+        // 更新土壤湿度显示
+        const moistureRaw = sensorData.soil_moisture;
+        const moisturePercent = config.moistureToPercent(moistureRaw);
+        document.getElementById('moisture').textContent = moisturePercent;
+        
+        const moistureStatus = config.getMoistureStatus(moistureRaw);
+        document.getElementById('moisture-status').textContent = moistureStatus.status;
+        document.getElementById('moisture-status').style.color = config.getColorForStatus(moistureStatus.level);
+        
+        // 显示更新时间
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+        const header = document.querySelector('.header p');
+        if (header) {
+            header.textContent = `最后更新: ${timeStr}`;
+        }
+    } catch (error) {
+        console.error('❌ 更新数据失败：', error);
+        document.getElementById('temp-status').textContent = '后端无数据';
+        document.getElementById('moisture-status').textContent = '后端无数据';
+        ui.showNotification('无法获取后端数据', 'error', 3000);
+    }
+}
+    //浇水控制函数 
+    async function startWatering() {
+    try {
+        // ===== 加上这段检查剩余量 =====
+        const status = await dataManager.fetchSystemStatus();
+        const remaining = (status.max_water_per_day || 30) - (status.water_today || 0);
+        
+        if (remaining <= 0) {
+            ui.showNotification(`今日浇水已达上限 (${status.water_today || 30}秒)，请明天再试`, 'warning', 5000);
+            return;
+        }
+        
+        console.log(`今日剩余可浇水: ${remaining}秒`);
+        // ===== 检查结束 =====
+        // 检查是否为自动模式
+        if (dataManager.currentMode === 'auto') {
+            ui.showNotification('自动模式下不能手动浇水，由系统规则控制', 'warning', 3000);
+            return;
+        }
+        
+        // 手动模式下，先获取当前是否需要浇水
+        const advice = await dataManager.getWateringAdvice();
+        let confirmMessage = '确定要手动浇水吗？';
+        
+        if (advice.advice.should_water) {
+            confirmMessage = `🌱 根据土壤湿度，建议浇水。确定浇水吗？\n原因：${advice.advice.reason}`;
+        }
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        const loader = ui.showLoader('正在浇水...');
+        const wateringSeconds = advice.advice.suggested_duration || 5;
+        const result = await dataManager.waterPlant(wateringSeconds);
+        ui.hideLoader();
+        ui.showNotification(`浇水成功！持续 ${result.duration || wateringSeconds}秒`, 'success', 3000);
+        setTimeout(() => {
+            updateData();
+            updateWateringDecision();
+        }, 2000);
+        
+    } catch (error) {
+        ui.hideLoader();
+        console.error('❌ 浇水失败:', error);
+        ui.showNotification(`浇水失败: ${error.message}`, 'error', 5000);
+    }
+}
+    //拍照函数 
+    async function takePhoto() {
+    try {
+        console.log('📸 手动拍照中...');
+        
+        // 显示加载状态（可选）
+        const btn = document.querySelector('button[onclick="takePhoto()"]');
+        const originalText = btn?.textContent;
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '拍照中...';
+        }
+        
+        // 调用拍照API（超时10秒）
+        const result = await dataManager.takePhotoWithTimeout(10000);
+        
+        // 恢复按钮状态
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+        
+        // 显示拍照结果
+        if (result && result.success) {
+            console.log('✅ 拍照成功:', result.image_url || result.filename);
+            
+            // 更新图片显示
+            if (result.image_url) {
+                const imgElement = document.getElementById('plant-image');
+                const placeholder = document.getElementById('image-placeholder');
+                
+                if (imgElement) {
+                    imgElement.src = result.image_url;
+                    imgElement.style.display = 'block';
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
+                    }
+                    console.log('✅ 图片已更新');
+                } else {
+                    console.log('❌ 找不到图片元素');
+                }
+            }
+            
+            alert(`拍照成功\n文件名：${result.filename || '未知'}`);
+            
+        } else {
+            throw new Error(result?.message || '拍照失败');
+        }
+        
+    } catch (error) {
+        console.error('❌ 拍照失败:', error);
+        
+        // 恢复按钮状态
+        const btn = document.querySelector('button[onclick="takePhoto()"]');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '拍摄照片';
+        }
+        
+        alert(`拍照失败：${error.message}`);
+    }
+}
+    
+    // ========== 模式切换模块 ========== 
+    function toggleMockMode() {
+    const isMock = dataManager.toggleAPIMode(!dataManager.useMockAPI);
+    const statusElem = document.getElementById('mode-status');
+    const button = document.querySelector('.header button');
+    
+    if (isMock) {
+        statusElem.textContent = '当前：模拟数据';
+        statusElem.style.color = '#666';
+        button.textContent = '🔄 模拟模式';
+        button.style.background = '#666';
+        console.log('切换到模拟模式');
+    } else {
+        statusElem.textContent = '当前：真实数据';
+        statusElem.style.color = '#4CAF50';
+        button.textContent = '🔄 真实模式';
+        button.style.background = '#4CAF50';
+        console.log('切换到真实模式');
+    }
+    
+    // 切换后立即更新数据
+    updateData();
+}
+    // 切换到手动模式
+    async function switchToManualMode() {
+    try {
+        ui.showNotification('正在切换到手动模式...', 'info');
+        
+        const result = await dataManager.switchSystemMode('manual');
+        
+        // 更新UI
+        updateModeUI('manual');
+        
+        ui.showNotification('已切换到手动模式', 'success');
+        console.log('模式切换成功:', result);
+        
+    } catch (error) {
+        console.error('切换手动模式失败:', error);
+        ui.showNotification(`切换失败: ${error.message}`, 'error');
+    }
+}
+   // 切换到自动模式
+   async function switchToAutoMode() {
+    try {
+        // 确认对话框
+        if (!confirm('切换到自动模式后，系统将根据土壤湿度自动浇水。确定吗？')) {
+            return;
+        }
+        
+        ui.showNotification('正在切换到自动模式...', 'info');
+        
+        const result = await dataManager.switchSystemMode('auto');
+        
+        // 更新UI
+        updateModeUI('auto', result.auto_config);
+        
+        ui.showNotification('已切换到自动模式', 'success');
+        console.log('模式切换成功:', result);
+        
+    } catch (error) {
+        console.error('切换自动模式失败:', error);
+        ui.showNotification(`切换失败: ${error.message}`, 'error');
+    }
+}
+   // 更新模式UI
+   function updateModeUI(mode, autoConfig = null) {
+    const manualBtn = document.getElementById('manual-mode-btn');
+    const autoBtn = document.getElementById('auto-mode-btn');
+    const modeDisplay = document.getElementById('current-mode-display');
+    const autoConfigDisplay = document.getElementById('auto-config-display');
+    
+    if (mode === 'manual') {
+        // 手动模式样式
+        manualBtn.style.opacity = '1';
+        manualBtn.style.background = '#2196f3';
+        autoBtn.style.opacity = '0.6';
+        autoBtn.style.background = '#4CAF50';
+        modeDisplay.innerHTML = '当前模式: 手动模式 👋';
+        modeDisplay.style.color = '#2196f3';
+        autoConfigDisplay.style.display = 'none';
+        
+        // 启用浇水按钮
+        const waterBtn = document.querySelector('button[onclick*="startWatering"]');
+        if (waterBtn) {
+            waterBtn.disabled = false;
+            waterBtn.style.opacity = '1';
+            waterBtn.title = '点击手动浇水';
+        }
+        
+    } else {
+        // 自动模式样式
+        autoBtn.style.opacity = '1';
+        autoBtn.style.background = '#4CAF50';
+        manualBtn.style.opacity = '0.6';
+        manualBtn.style.background = '#2196f3';
+        modeDisplay.innerHTML = '当前模式: 自动模式 🤖';
+        modeDisplay.style.color = '#4CAF50';
+        
+        // 显示自动配置
+        if (autoConfig) {
+            document.getElementById('water-threshold').textContent = autoConfig.water_threshold;
+            document.getElementById('water-duration').textContent = autoConfig.water_duration;
+            document.getElementById('check-interval').textContent = autoConfig.check_interval;
+            autoConfigDisplay.style.display = 'block';
+        }
+        
+        // 禁用浇水按钮
+        const waterBtn = document.querySelector('button[onclick*="startWatering"]');
+        if (waterBtn) {
+            waterBtn.disabled = true;
+            waterBtn.style.opacity = '0.6';
+            waterBtn.title = '自动模式下不能手动浇水';
+        }
+    }
+}
+   // 页面加载时获取当前模式
+   async function loadCurrentMode() {
+    try {
+        const status = await dataManager.fetchSystemStatus();
+        if (status && status.mode) {
+            updateModeUI(status.mode, status.auto_config);
+        }
+    } catch (error) {
+        console.error('获取当前模式失败:', error);
+        // 默认手动模式
+        updateModeUI('manual');
+    }
+}
+
+
+   // ========== 添加AI分析更新函数 ==========
+   let isTakingPhoto = false;
+   async function updateDiseaseAnalysis() {
+    if (isTakingPhoto) {
+        console.log('⏳ 上次拍照还没完成，跳过');
+        return;
+    }
+    try {
+        isTakingPhoto = true;
+        console.log('📸 开始病害检测流程...');
+        
+        // ===== 第1步：先拍照 =====
+        console.log('正在拍照...');
+        const photoResult = await dataManager.takePhoto();
+        
+        if (!photoResult || !photoResult.success) {
+            throw new Error('拍照失败，无法进行病害检测');
+        }
+        
+        console.log('✅ 拍照成功:', photoResult.filename || photoResult.image_url);
+        
+        // ===== 第2步：更新图片显示（无论病害检测是否成功，都要显示图片） =====
+        if (photoResult.image_url) {
+            const imgElement = document.getElementById('plant-image');
+            const placeholder = document.getElementById('image-placeholder');
+            
+            if (imgElement) {
+                imgElement.src = photoResult.image_url;
+                imgElement.style.display = 'block';
+                if (placeholder) placeholder.style.display = 'none';
+                console.log('✅ 图片已更新:', photoResult.image_url);
+            } else {
+                console.log('❌ 找不到 img 元素');
+            }
+        }
+        
+        // ===== 第3步：再用最新照片做病害检测 =====
+        console.log('🔍 开始分析病害...');
+        let result;
+        
+        if (dataManager.useMockAPI) {
+            result = await dataManager.fetchMockAIAnalysis();
+        } else {
+            result = await dataManager.fetchRealAIAnalysis();
+        }
+        
+        // ===== 第4步：更新病害信息 =====
+        if (result && result.success) {
+            // 更新病害名称
+            document.getElementById('disease-name').textContent = result.disease_name || '未知';
+            
+            // 更新置信度
+            const confidenceElem = document.getElementById('disease-confidence');
+            if (result.confidence === 'high') {
+                confidenceElem.textContent = '高可信度';
+                confidenceElem.style.color = '#4CAF50';
+            } else {
+                confidenceElem.textContent = '低可信度';
+                confidenceElem.style.color = '#FF9800';
+            }
+            
+            // 更新治疗方案和预防措施
+            document.getElementById('disease-suggestions').innerHTML = 
+                `💊 治疗：${result.treatment || '无'}<br>🛡️ 预防：${result.prevention || '无'}`;
+            
+            // 更新植物健康状况
+            const statusElem = document.getElementById('disease-status');
+            if (result.disease_name === '健康' || result.disease_name === '无病害') {
+                statusElem.textContent = '健康';
+                statusElem.style.color = '#4CAF50';
+            } else {
+                statusElem.textContent = '需关注';
+                statusElem.style.color = '#F44336';
+            }
+            
+            // 显示检测时间
+            const timeElem = document.querySelector('.sensor-card:nth-child(4) .sensor-time');
+            if (timeElem) {
+                timeElem.textContent = `最新检测: ${new Date().toLocaleTimeString()}`;
+            }
+        }
+        
+        console.log('✅ 病害检测流程完成');
+        
+    } catch (error) {
+        console.error('❌ 病害检测流程失败:', error);
+        
+        // 显示错误信息
+        document.getElementById('disease-name').textContent = '检测失败';
+        document.getElementById('disease-confidence').textContent = '--';
+        document.getElementById('disease-suggestions').innerHTML = 
+            `❌ 错误：${error.message || '请稍后重试'}`;
+    }finally {
+        isTakingPhoto = false;// 无论成功失败都要解锁
+    }
+}
+   // 新增：更新浇水决策（基于规则）
+   async function updateWateringDecision() {
+    try {
+        // 获取基于规则的浇水建议
+        const advice = await dataManager.getWateringAdvice();
+        
+        if (advice && advice.advice) {
+            const decision = advice.advice;
+            const sensorData = advice.sensor_data || {};
+            
+            // 更新土壤湿度显示
+            const moisturePercent = decision.soil_moisture_percent || 
+                config.moistureToPercent(sensorData.soil_moisture || 0);
+            document.getElementById('decision-moisture').textContent = moisturePercent + '%';
+            
+            // 更新决策动作
+            const actionElem = document.getElementById('decision-action');
+            actionElem.textContent = decision.should_water ? '需要浇水' : '暂不需要浇水';
+            actionElem.style.color = decision.should_water ? '#F44336' : '#4CAF50';
+            
+            // 更新原因
+            document.getElementById('decision-reason').textContent = decision.reason;
+            
+            // 更新时间
+            document.getElementById('decision-time').textContent = 
+                new Date().toLocaleTimeString();
+        }
+        
+    } catch (error) {
+        console.error('更新浇水决策失败:', error);
+    }
+}
+   // 修改 DOMContentLoaded 事件
+   document.addEventListener('DOMContentLoaded', function() {
+    console.log('🌱 植物监控系统启动 - 浇水由规则决定，AI做病害诊断');
+    
+    loadCurrentMode();
+    updateData();
+    
+    setInterval(updateData, 10000);  // 10秒更新一次传感器数据
+    // ✅ 病害检测：先拍照再检测，间隔可以长一点
+    setTimeout(() => {
+        updateDiseaseAnalysis();  // 页面加载后等1秒再执行
+    }, 1000);
+    
+    // ✅ 每5分钟做一次完整的拍照+检测（避免频繁拍照）
+    setInterval(() => {
+        updateDiseaseAnalysis();
+    }, 30000); // 300000ms = 5分钟
+    
+    // 浇水决策更新频率可以高一些
+    setInterval(updateWateringDecision, 30000);  // 15秒
+    
+    console.log('✅ 定时任务已启动 - 规则决策(15s) + AI病害(5min)');
+});
+    </script>
+</body>
+</html>
