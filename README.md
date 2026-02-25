@@ -23,6 +23,20 @@ pip install -r requirements.txt
 - 首页：http://localhost:5000
 - API文档：http://localhost:5000/
 
+### 4.硬件清单
+
+|组件|型号/规格|数量|用途|
+|------|-----------|------|------|
+| 树莓派 | 3B/4B | 1 | 主控，运行通信服务 |
+| Arduino | Uno/Nano | 1 | 连接传感器和执行器 |
+| 温湿度传感器 | DHT11 | 1 | 测量空气温湿度 |
+| 土壤湿度传感器 | 模拟量 | 1 | 测量土壤湿度 |
+| 水泵 | 5V/12V | 1 | 浇水执行器 |
+| 继电器模块 | 5V | 1 | 控制水泵开关 |
+| 摄像头 | USB或CSI | 1 | 拍摄植物照片 |
+
+详细接线图请参考 `hardware/README.md`
+
 ## 📁项目结构
 
 plant_system/
@@ -67,7 +81,15 @@ plant_system/
 
 │ └── ui-components.js # UI组件
 
-├── hardware/ # 硬件控制代码（待添加）
+├── hardware/                           # 硬件控制代码
+
+│   ├── arduino/                         # Arduino代码
+
+│   │   └── plant_monitor.ino              # 传感器读取 + 水泵控制
+
+│   ├── raspberry_pi/                      # 树莓派代码
+
+│   │   └── main.py                          # 串口通信 + 拍照 + 与后端通信
 
 ├── ai_model/ # AI模型文件（需自行下载）
 
