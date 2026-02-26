@@ -100,6 +100,8 @@ plant_system/
 
 │ └── README.md # 硬件说明文档
 
+├── videos # 演示视频
+
 ├── ai_model/ # AI模型文件（需自行下载，未设该文件夹）
 
 ├── .gitignore # Git忽略文件配置
