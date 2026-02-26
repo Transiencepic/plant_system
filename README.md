@@ -91,6 +91,8 @@ plant_system/
 
 │   │   └── main.py                          # 串口通信 + 拍照 + 与后端通信
 
+│   ├── README.md                          # 硬件文档
+
 ├── ai_model/ # AI模型文件（需自行下载）
 
 ├── docs/ # 文档
