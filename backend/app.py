@@ -761,6 +761,14 @@ API列表:
     """
     print(banner)
 
+# ============ 静态文件服务 ============
+from flask import send_from_directory
+
+@app.route('/<path:filename>')
+def serve_frontend(filename):
+    """提供前端静态文件"""
+    return send_from_directory('frontend', filename)
+
 if __name__ == '__main__':
     print_banner()
     app.run(

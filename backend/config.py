@@ -56,7 +56,7 @@ HARDWARE_CONFIG = {
 
     # ========== 以下两项需要硬件同学提供具体值 ==========
     # 1. 浇水控制地址：硬件同学设备上运行的HTTP服务地址
-    "water_device_url": " https://leptodactylous-knickknacked-astrid.ngrok-free.dev/water",
+    "water_device_url": " https://leptodactylous-knickknacked-astrid.ngrok-free.dev/api/water",
     
     # 2. 拍照服务地址：树莓派上拍照Flask服务的地址
     "camera_service_url": " https://leptodactylous-knickknacked-astrid.ngrok-free.dev/photo"
