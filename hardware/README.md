@@ -36,6 +36,7 @@ pip install flask pyserial opencv-python requests
 2.修改配置：
 在 raspberry_pi/ main.py  中设置正确的串口号（如 /dev/ttyUSB0）
 设置你的后端 ngrok 地址
+
 3.运行
 ```bash
 cd hardware/raspberry_pi
