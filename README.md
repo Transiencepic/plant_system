@@ -73,7 +73,7 @@ plant_system/
 
 │ └── js/ # JavaScript文件
 
-│ ├── config.js # 前端配置文件（API端点配置）
+│ ├── config.js # 前端配置文件
 
 │ ├── data-manager.js # 数据管理逻辑
 
@@ -81,31 +81,29 @@ plant_system/
 
 │ └── ui-components.js # UI组件
 
-├── hardware/                           # 硬件控制代码
+├── hardware/ # 硬件控制代码
 
-│   ├── arduino/                         # Arduino代码
+│ ├── arduino/ # Arduino代码
 
-│   │   └── plant_monitor.ino              # 传感器读取 + 水泵控制
+│ │ └── plant_monitor.ino # 传感器读取 + 水泵控制
 
-│   ├── raspberry_pi/                      # 树莓派代码
+│ ├── raspberry_pi/ # 树莓派代码
 
-│   │   └── main.py                          # 串口通信 + 拍照 + 与后端通信
+│ │ ├── main.py # 主控程序（串口通信 + 拍照 + 与后端通信）
 
-├── ai_model/ # AI模型文件（需自行下载）
+│ ├── images/ # 硬件相关图片
 
-├── docs/ # 文档
+│ │ └── wiring_diagram.jpg # 接线图
 
-│ ├── README.md # 本文档
+│ └── README.md # 硬件说明文档
 
-│ └── API_DOCUMENTATION.md # 详细的API接口文档
+├── ai_model/ # AI模型文件（需自行下载，未设该文件夹）
 
-├── data/ # 本地模拟数据存储目录
+├── .gitignore # Git忽略文件配置
 
-│ └── images/ # 测试图片存放位置
+├── README.md # 本文档
 
-├── .env # 环境变量（请勿上传）
-
-└── .gitignore # Git忽略文件配置
+├── API_DOCUMENTATION.md # 详细的API接口文档
 
 
 ## AI模型说明
