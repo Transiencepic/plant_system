@@ -16,7 +16,7 @@
 | 摄像头 | USB或CSI | 1 | 拍摄植物照片 |
 
 ## 实物接线图
-![接线图](hardware/raspberry_pi/2BACC472B0073E230DB73DB5B570B905.jpg)
+![接线图](raspberry_pi/2BACC472B0073E230DB73DB5B570B905.jpg)
 
 ## 通信协议
 1. **Arduino → 树莓派**：每2秒发送一次传感器数据，格式 `温度,湿度,土壤值`
