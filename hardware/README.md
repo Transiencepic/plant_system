@@ -29,7 +29,7 @@
 3. 上传代码
 
 ### 树莓派
-1. 安装依赖：
+1.安装依赖：
 ```bash
 pip install flask pyserial opencv-python requests
 ```
