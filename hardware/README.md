@@ -68,7 +68,7 @@
 
 \## 硬件接线图
 
-
+!\[接线图](images\\wiring\_diagram.jpg)
 
 
 
