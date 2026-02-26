@@ -91,8 +91,6 @@ plant_system/
 
 │ │ ├── main.py # 主控程序（串口通信 + 拍照 + 与后端通信）
 
-│ │ ├── camera_service.py # 独立拍照服务（可选）
-
 │ ├── images/ # 硬件相关图片
 
 │ │ └── wiring_diagram.jpg # 接线图
